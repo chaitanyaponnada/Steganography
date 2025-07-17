@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Steganography Result</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+    background: url('https://t3.ftcdn.net/jpg/02/69/46/42/360_F_269464287_Q2DoeIRT847orJlYDSX59T8pjlF9nO94.jpg') no-repeat center center fixed;
+    background-size: cover;
+    color: white;
+    text-align: center;
+    padding-top: 50px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    height: 100vh;
+    position: relative;
+    overflow: hidden;
+}
+
+.container {
+    max-width: 100%;
+    padding: 0 15px;
+    margin: 0 auto;
+}
+
+.content {
+    position: relative;
+    z-index: 2;
+    opacity: 0;
+    animation: revealContent 2s ease-in-out forwards;
+}
+
+.result-card {
+    background: rgba(75, 98, 118, 0.7);
+    border-radius: 10px;
+    box-shadow: 0 12px 24px rgba(70, 88, 105, 0.7);
+    color: #fff;
+    padding: 20px;
+    width: 90%;
+    max-width: 400px; /* Adjust as needed */
+    margin: 3% auto;
+}
+
+.btn {
+    border-radius: 25px;
+    padding: 10px 20px;
+    font-size: 1.2em;
+    transition: all 0.3s ease;
+    display: inline-block;
+    text-transform: uppercase;
+}
+
+.btn-secondary {
+    background: #6c757d;
+    border: none;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #5a6268;
+    transform: scale(1.1);
+}
+
+p {
+    color: rgb(39, 104, 179);
+    font-size: 2em;
+    font-weight: bold;
+    margin: 0;
+}
+
+.message-box {
+    margin-top: 20px;
+    padding: 10px;
+    border: 1px solid #5a6268;
+    border-radius: 15px;
+    background-color: #4c79a6;
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.5);
+    width: 100%;
+    max-width: 100%;
+    height: 175px;
+    box-sizing: border-box;
+}
+
+.message-box textarea {
+    background-color: #010304;
+    color: #dde1e6;
+    border: none;
+    resize: none;
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+}
+
+h1 {
+    font-size: 1.5em;
+}
+
+h2 {
+    font-size: 1.2em;
+    padding: 7%;
+    color: #de162a;
+}
+
+h3 {
+    font-size: 1em;
+    color: rgb(39, 104, 179);
+}
+
+.curtain {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    z-index: 1;
+    animation: curtainWave 2s ease-in-out forwards;
+}
+
+.confetti {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 1000;
+}
+
+.confetti-piece {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: rgba(255, 223, 0, 0.8);
+    animation: confettiFall 2s ease-in-out forwards;
+}
+
+@keyframes curtainWave {
+    0% {
+        transform: scaleX(0) scaleY(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scaleX(1.5) scaleY(1.5);
+        transform-origin: center;
+        opacity: 1;
+    }
+    100% {
+        transform: scaleX(1) scaleY(1);
+        opacity: 0;
+    }
+}
+
+@keyframes revealContent {
+    0% {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes confettiFall {
+    from {
+        transform: translateY(-100vh) rotate(0deg);
+        opacity: 1;
+    }
+    to {
+        transform: translateY(100vh) rotate(360deg);
+        opacity: 0;
+    }
+}
+
+.confetti-piece:nth-child(odd) {
+    background-color: rgba(255, 69, 0, 0.8);
+    animation-duration: 2.5s;
+}
+
+.confetti-piece:nth-child(even) {
+    background-color: rgba(0, 255, 127, 0.8);
+    animation-duration: 5s;
+}
+
+#canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1; /* Make sure it is behind other content */
+}
+    </style>
+</head>
+<body data-pass-key="{{ pass_key }}" data-file-path="{{ file_path }}">
+    <div class="content" id="content">
+        <div class="container">
+            <!-- Display only the pass key if it's available -->
+            <div id="passKeySection" style="display: none;">
+                <h2>** Remember the pass key to decode the encoded_video **</h2>
+                <h3>Your Pass Key is: {{ pass_key }}</h3>
+            </div>
+
+            <!-- Hide these elements when only the pass key is to be shown -->
+            <div id="fullContentSection">
+                <div class="head">
+                    <p>Hurray...!!</p>
+                </div>
+                <div class="result-card">
+                    <h1 id="secret">Here is your secret message:</h1>
+                    <div class="message-box">
+                        <textarea id="decodedMessage" class="form-control" readonly>{{ message }}</textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Always show the "Back to Menu" button -->
+            <button id="backToMenu" class="btn btn-secondary mt-3" onclick="backToMenu()">Back to Menu</button>
+        </div>
+    </div>
+    <div class="confetti" id="confetti"></div>
+    <canvas id="canvas"></canvas>
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        let particlesArray;
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const mouse = {
+            x: null,
+            y: null,
+            radius: (canvas.height/50) * (canvas.width/500)
+        };
+
+        window.addEventListener('mousemove', function(event){
+            mouse.x = event.x;
+            mouse.y = event.y;
+        });
+
+        class Particle {
+            constructor(x, y, directionX, directionY, size, color){
+                this.x = x;
+                this.y = y;
+                this.directionX = directionX;
+                this.directionY = directionY;
+                this.size = size;
+                this.color = color;
+            }
+            draw(){
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2, false);
+                ctx.fillStyle = '#ffffff';
+                ctx.fill();
+            }
+            update(){
+                if(this.x > canvas.width || this.x < 0){
+                    this.directionX = -this.directionX;
+                }
+                if(this.y > canvas.height || this.y < 0){
+                    this.directionY = -this.directionY;
+                }
+                let dx = mouse.x - this.x;
+                let dy = mouse.y - this.y;
+                let distance = Math.sqrt(dx*dx + dy*dy);
+                if(distance < mouse.radius + this.size){
+                    if(mouse.x < this.x && this.x < canvas.width - this.size * 10){
+                        this.x += 10;
+                    }
+                    if(mouse.x > this.x && this.x > this.size * 10){
+                        this.x -= 10;
+                    }
+                    if(mouse.y < this.y && this.y < canvas.height - this.size * 10){
+                        this.y += 10;
+                    }
+                    if(mouse.y > this.y && this.y > this.size * 10){
+                        this.y -= 10;
+                    }
+                }
+                this.x += this.directionX;
+                this.y += this.directionY;
+                this.draw();
+            }
+        }
+
+        function init(){
+            particlesArray = [];
+            let numberOfParticles = (canvas.height * canvas.width) / 9000;
+            for(let i = 0; i < numberOfParticles; i++){
+                let size = (Math.random() * 5) + 1;
+                let x = (Math.random() * ((innerWidth - size * 2) - (size * 2)) + size * 2);
+                let y = (Math.random() * ((innerHeight - size * 2) - (size * 2)) + size * 2);
+                let directionX = (Math.random() * 5) - 2.5;
+                let directionY = (Math.random() * 5) - 2.5;
+                let color = '#ffffff';
+
+                particlesArray.push(new Particle(x, y, directionX, directionY, size, color));
+            }
+        }
+
+        function animate(){
+            requestAnimationFrame(animate);
+            ctx.clearRect(0, 0, innerWidth, innerHeight);
+
+            for(let i = 0; i < particlesArray.length; i++){
+                particlesArray[i].update();
+            }
+            connect();
+        }
+
+        function connect(){
+            let opacityValue = 1;
+            for (let a = 0; a < particlesArray.length; a++){
+                for (let b = a; b < particlesArray.length; b++){
+                    let distance = ((particlesArray[a].x - particlesArray[b].x) * (particlesArray[a].x - particlesArray[b].x))
+                    + ((particlesArray[a].y - particlesArray[b].y) * (particlesArray[a].y - particlesArray[b].y));
+                    if (distance < (canvas.width/7) * (canvas.height/7)){
+                        opacityValue = 1 - (distance/20000);
+                        ctx.strokeStyle='rgba(255,255,255,' + opacityValue + ')';
+                        ctx.lineWidth = 1;
+                        ctx.beginPath();
+                        ctx.moveTo(particlesArray[a].x, particlesArray[a].y);
+                        ctx.lineTo(particlesArray[b].x, particlesArray[b].y);
+                        ctx.stroke();
+                    }
+                }
+            }
+        }
+
+        window.addEventListener('resize', function(){
+            canvas.width = innerWidth;
+            canvas.height = innerHeight;
+            mouse.radius = (canvas.height/100) * (canvas.width/100);
+            init();
+        });
+
+        window.addEventListener('mouseout', function(){
+            mouse.x = undefined;
+            mouse.y = undefined;
+        });
+
+        init();
+        animate();
+        function backToMenu() {
+            window.location.href = "{{ url_for('index') }}#main-menu";
+        }
+
+        function createConfetti() {
+            const confettiContainer = document.getElementById('confetti');
+            const numConfetti = 100;
+
+            for (let i = 0; i < numConfetti; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti-piece';
+                confetti.style.left = `${Math.random() * 100}%`;
+                confetti.style.top = `${Math.random() * 100}%`;
+                confetti.style.transform = `rotate(${Math.random() * 360}deg)`;
+                confettiContainer.appendChild(confetti);
+            }
+        }
+
+        function clearConfetti() {
+            const confettiContainer = document.getElementById('confetti');
+            confettiContainer.innerHTML = ''; // Remove all confetti pieces
+        }
+
+        function clearMessage() {
+            const messageBox = document.getElementById('decodedMessage');
+            messageBox.value = ''; // Clear the message textarea
+        }
+
+        document.getElementById('backToMenu').addEventListener('click', function() {
+            clearMessage();
+            clearConfetti();
+        });
+
+        window.onload = function() {
+            // Retrieve pass key from the body data attribute
+            const passKey = document.body.getAttribute('data-pass-key');
+            const filePath = document.body.getAttribute('data-file-path');
+
+            const showOnlyPassKey = passKey !== ''; // Check if pass key is available
+
+            if (showOnlyPassKey) {
+                document.getElementById('passKeySection').style.display = 'block';
+                document.getElementById('fullContentSection').style.display = 'none';
+
+                // Hide the curtain and animation when showing only the pass key
+                document.getElementById('content').style.opacity = '1';
+
+                // Automatically trigger download after loading the page
+                if (filePath) {
+                    window.location.href = "{{ url_for('download_file', file_path=file_path) }}";
+                }
+            } else {
+                document.getElementById('passKeySection').style.display = 'none';
+                document.getElementById('fullContentSection').style.display = 'block';
+
+                setTimeout(() => {
+                    createConfetti();
+                }, 2000);
+            }
+        }
+    </script>
+</body>
+</html>
